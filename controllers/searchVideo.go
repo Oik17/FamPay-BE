@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -26,7 +25,11 @@ func SearchVideos(c *fiber.Ctx) error {
 	ctx := context.Background()
 	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(apiKey))
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).SendString(err.Error())
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "false",
+			"data":    err.Error(),
+			"message": "Invalid API Key",
+		})
 	}
 
 	publishedAfter := time.Date(2023, time.April, 1, 0, 0, 0, 0, time.UTC)
@@ -46,12 +49,26 @@ func SearchVideos(c *fiber.Ctx) error {
 		})
 	}
 
-	var result string
+	var videos []fiber.Map
+	ytUrl := "https://www.youtube.com/watch?v="
+
 	for _, item := range response.Items {
 		if item.Id.Kind == "youtube#video" {
-			result += fmt.Sprintf("Title: %s, Video ID: %s\n", item.Snippet.Title, item.Id.VideoId)
+			video := fiber.Map{
+				"channelTitle": item.Snippet.ChannelTitle,
+				"title":        item.Snippet.Title,
+				"description":  item.Snippet.Description,
+				"videoUrl":     ytUrl + item.Id.VideoId,
+				"thumbnail":    item.Snippet.Thumbnails.High.Url,
+				"publishedAt":  item.Snippet.PublishedAt,
+			}
+			videos = append(videos, video)
 		}
 	}
 
-	return c.SendString(result)
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"status":  "true",
+		"data":    videos,
+		"message": "Successfully fetched videos",
+	})
 }
