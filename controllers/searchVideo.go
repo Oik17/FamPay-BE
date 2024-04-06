@@ -5,14 +5,19 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Oik17/FamPay-BE/database"
+	"github.com/Oik17/FamPay-BE/services"
 	"github.com/Oik17/FamPay-BE/utils"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
 
 func SearchVideos(c *fiber.Ctx) error {
 	query := c.Query("id")
+	db := database.DB.Db
+
 	if query == "" {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"status":  "false",
@@ -50,7 +55,10 @@ func SearchVideos(c *fiber.Ctx) error {
 	}
 
 	var videos []fiber.Map
-	ytUrl := "https://www.youtube.com/watch?v="
+	sqlQuery := `
+	INSERT INTO video (id, title, description, channelTitle, publishedAt, thumbnail, url)
+	SELECT $1, $2, $3, $4, $5, $6, $7;
+	`
 
 	for _, item := range response.Items {
 		if item.Id.Kind == "youtube#video" {
@@ -58,11 +66,47 @@ func SearchVideos(c *fiber.Ctx) error {
 				"channelTitle": item.Snippet.ChannelTitle,
 				"title":        item.Snippet.Title,
 				"description":  item.Snippet.Description,
-				"videoUrl":     ytUrl + item.Id.VideoId,
+				"videoUrl":     item.Id.VideoId,
 				"thumbnail":    item.Snippet.Thumbnails.High.Url,
 				"publishedAt":  item.Snippet.PublishedAt,
 			}
+			video["publishedAt"], err = time.Parse(time.RFC3339, video["publishedAt"].(string))
+			if err != nil {
+				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+					"message": "Failed to parse publishedAt",
+					"data":    err.Error(),
+					"status":  "false",
+				})
+			}
 			videos = append(videos, video)
+			urlCheck, err := services.CheckUrlInDB(video["videoUrl"].(string))
+			if err != nil {
+				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+					"message": "Failed to check",
+					"data":    err.Error(),
+					"status":  false,
+				})
+			}
+			if urlCheck {
+				_, err = db.ExecContext(
+					c.Context(),
+					sqlQuery,
+					uuid.New(),
+					video["channelTitle"].(string),
+					video["title"].(string),
+					video["description"].(string),
+					video["publishedAt"],
+					video["thumbnail"].(string),
+					video["videoUrl"].(string),
+				)
+				if err != nil {
+					return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+						"message": "Failed to create video",
+						"data":    err.Error(),
+						"status":  "false",
+					})
+				}
+			}
 		}
 	}
 

@@ -56,7 +56,7 @@ func runMigrations(db *sqlx.DB) {
 			title VARCHAR(255) NOT NULL,
 			description TEXT,
 			channelTitle VARCHAR(255),
-			pulishedAt TIMESTAMP,
+			publishedAt TIMESTAMP,
 			thumbnail VARCHAR(255),
 			url VARCHAR(255)
 		);
