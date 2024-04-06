@@ -3,9 +3,9 @@ package controllers
 import (
 	"context"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/Oik17/FamPay-BE/utils"
 	"github.com/gofiber/fiber/v2"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
@@ -21,7 +21,7 @@ func SearchVideos(c *fiber.Ctx) error {
 		})
 	}
 
-	apiKey := os.Getenv("YOUTUBE_API_KEY")
+	apiKey := utils.Config("YOUTUBE_API_KEY")
 	ctx := context.Background()
 	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(apiKey))
 	if err != nil {
