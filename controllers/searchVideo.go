@@ -34,7 +34,7 @@ func SearchVideos(c *fiber.Ctx) error {
 func GetVideos(c *fiber.Ctx) error {
 	db := database.DB.Db
 	var videos []models.Video
-	query := `SELECT * FROM video`
+	query := `SELECT * FROM video ORDER BY publishedAt DESC`
 
 	err := db.Select(&videos, query)
 	if err != nil {
@@ -51,7 +51,7 @@ func GetVideoByPrompt(c *fiber.Ctx) error {
 	id := c.Query("id")
 	db := database.DB.Db
 	var videos []models.Video
-	query := `SELECT * FROM video where prompt=$1`
+	query := `SELECT * FROM video where prompt=$1 ORDER BY publishedAt DESC`
 	err := db.Select(&videos, query, id)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
@@ -91,7 +91,7 @@ func GetVideoByTitle(c *fiber.Ctx) error {
 	id := c.Query("id")
 	db := database.DB.Db
 	var videos []models.Video
-	query := `SELECT * FROM video where title=$1`
+	query := `SELECT * FROM video where title=$1 ORDER BY publishedAt DESC`
 	err := db.Select(&videos, query, id)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
