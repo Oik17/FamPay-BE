@@ -7,9 +7,14 @@ import (
 )
 
 func main() {
+
 	database.Connect()
 	app := fiber.New()
 	app.Get("/search", controllers.SearchVideos)
 	app.Get("/getVideos", controllers.GetVideos)
+	app.Get("/getVideos/title", controllers.GetVideoByTitle)
+	app.Get("/getVideos/id", controllers.GetVideoById)
+	app.Get("/getVideos/prompt", controllers.GetVideoByPrompt)
 	app.Listen(":3000")
+
 }

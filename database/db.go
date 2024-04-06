@@ -53,6 +53,7 @@ func runMigrations(db *sqlx.DB) {
 	
 		CREATE TABLE IF NOT EXISTS video (
 			id UUID PRIMARY KEY,
+			prompt VARCHAR(255),
 			title VARCHAR(255) NOT NULL,
 			description TEXT,
 			channelTitle VARCHAR(255),

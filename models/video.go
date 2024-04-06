@@ -8,6 +8,7 @@ import (
 
 type Video struct {
 	ID           uuid.UUID `json:"id"`
+	Prompt       string    `json:"prompt"`
 	Title        string    `json:"title"`
 	Description  string    `json:"description"`
 	ChannelTitle string    `json:"channelTitle"`
