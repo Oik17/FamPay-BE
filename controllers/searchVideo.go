@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/Oik17/FamPay-BE/services"
 
@@ -21,8 +22,8 @@ func SearchVideos(c *fiber.Ctx) error {
 	}
 
 	var videos []fiber.Map
-	go services.FetchAndStoreVideos(query, &videos) //Keep running the function asynchronously even after the value is returned.
-
+	go services.FetchAndStoreVideos(query, &videos) //Keep running the function asynchronously even after the function value is returned.
+	time.Sleep(22 * time.Second)
 	return c.Status(http.StatusOK).JSON(fiber.Map{
 		"status":  "true",
 		"data":    videos,
