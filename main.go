@@ -10,5 +10,6 @@ func main() {
 	database.Connect()
 	app := fiber.New()
 	app.Get("/search", controllers.SearchVideos)
+	app.Get("/getVideos", controllers.GetVideos)
 	app.Listen(":3000")
 }

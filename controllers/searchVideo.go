@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Oik17/FamPay-BE/database"
+	"github.com/Oik17/FamPay-BE/models"
 	"github.com/Oik17/FamPay-BE/services"
 	"github.com/Oik17/FamPay-BE/utils"
 	"github.com/gofiber/fiber/v2"
@@ -115,4 +116,20 @@ func SearchVideos(c *fiber.Ctx) error {
 		"data":    videos,
 		"message": "Successfully fetched videos",
 	})
+}
+
+func GetVideos(c *fiber.Ctx) error {
+	db := database.DB.Db
+	var videos []models.Video
+	query := `SELECT * FROM video`
+
+	err := db.Select(&videos, query)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to fetch videos",
+			"data":    err.Error(),
+			"status":  "false",
+		})
+	}
+	return c.Status(http.StatusAccepted).JSON(videos)
 }
